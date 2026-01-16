@@ -1,7 +1,7 @@
 import unittest
 from converter.core.registry import ConverterRegistry
 from converter.core.base import BaseConverter
-from argparse import ArgumentParser, Namespace
+from converter.core.arguments import InterfaceBuilder
 
 class MockConverter(BaseConverter):
     @property
@@ -10,9 +10,9 @@ class MockConverter(BaseConverter):
     @property
     def help(self):
         return "mock help"
-    def setup_parser(self, parser):
+    def configure_args(self, builder: InterfaceBuilder):
         pass
-    def convert(self, args):
+    def convert(self, **kwargs):
         pass
 
 class TestRegistry(unittest.TestCase):

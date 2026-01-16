@@ -1,8 +1,9 @@
 import base64
-from argparse import ArgumentParser, Namespace
+from typing import Any
 from ..core.base import BaseConverter
 from ..core.registry import ConverterRegistry
 from ..core.exceptions import ValidationError, ConversionError
+from ..core.arguments import InterfaceBuilder
 
 class EncodingConverter(BaseConverter):
     @property
@@ -13,22 +14,22 @@ class EncodingConverter(BaseConverter):
     def help(self) -> str:
         return "Encode/Decode Base64"
 
-    def setup_parser(self, parser: ArgumentParser):
-        group = parser.add_mutually_exclusive_group(required=True)
-        group.add_argument("--b64enc", metavar="STRING", help="Encode string to Base64")
-        group.add_argument("--b64dec", metavar="BASE64_STRING", help="Decode Base64 string")
+    def configure_args(self, builder: InterfaceBuilder):
+        group = builder.add_group(exclusive=True, required=True)
+        group.add_argument("b64enc", metavar="STRING", help="Encode string to Base64")
+        group.add_argument("b64dec", metavar="BASE64_STRING", help="Decode Base64 string")
 
-    def convert(self, args: Namespace):
-        if args.b64enc:
+    def convert(self, **kwargs: Any):
+        if kwargs.get('b64enc'):
             try:
-                data = args.b64enc.encode('utf-8')
+                data = kwargs['b64enc'].encode('utf-8')
                 encoded = base64.b64encode(data).decode('utf-8')
                 print(encoded)
             except Exception as e:
                 raise ConversionError(f"Encoding failed: {e}")
-        elif args.b64dec:
+        elif kwargs.get('b64dec'):
             try:
-                data = args.b64dec
+                data = kwargs['b64dec']
                 decoded = base64.b64decode(data).decode('utf-8')
                 print(decoded)
             except Exception as e:

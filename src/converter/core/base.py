@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from argparse import ArgumentParser, Namespace
+from typing import Any, Dict
+from .arguments import InterfaceBuilder
 
 class BaseConverter(ABC):
     """
@@ -19,17 +20,17 @@ class BaseConverter(ABC):
         pass
 
     @abstractmethod
-    def setup_parser(self, parser: ArgumentParser):
+    def configure_args(self, builder: InterfaceBuilder):
         """
-        Setup arguments for this converter.
-        :param parser: The ArgumentParser (or subparser) to add arguments to.
+        Define arguments for this converter using the generic builder.
+        :param builder: The InterfaceBuilder to add arguments/groups to.
         """
         pass
 
     @abstractmethod
-    def convert(self, args: Namespace):
+    def convert(self, **kwargs: Any):
         """
-        Perform the conversion based on the parsed arguments.
-        :param args: Parsed arguments from the CLI.
+        Perform the conversion based on the provided arguments.
+        :param kwargs: Dictionary of argument names and values.
         """
         pass
