@@ -6,11 +6,13 @@ setup(
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     install_requires=[
-        # Add dependencies here
+        "ttkbootstrap>=1.10.1",
+        "Pillow>=9.0.0"
     ],
     entry_points={
         "console_scripts": [
             "universal-converter=converter.cli:main",
+            "universal-converter-gui=converter.gui.app:main",
         ],
     },
 )

@@ -1,8 +1,9 @@
 import datetime
-from argparse import ArgumentParser, Namespace
+from typing import Any
 from ..core.base import BaseConverter
 from ..core.registry import ConverterRegistry
-from ..core.exceptions import ValidationError, ConversionError
+from ..core.exceptions import ValidationError
+from ..core.arguments import InterfaceBuilder
 
 class DatetimeConverter(BaseConverter):
     @property
@@ -13,27 +14,21 @@ class DatetimeConverter(BaseConverter):
     def help(self) -> str:
         return "Convert between Timestamp and Datetime (ISO format)"
 
-    def setup_parser(self, parser: ArgumentParser):
-        group = parser.add_mutually_exclusive_group(required=True)
-        group.add_argument("--to-ts", metavar="ISO_DATETIME", help="Convert ISO datetime string to timestamp")
-        group.add_argument("--to-dt", metavar="TIMESTAMP", help="Convert timestamp to ISO datetime string")
+    def configure_args(self, builder: InterfaceBuilder):
+        group = builder.add_group(exclusive=True, required=True)
+        group.add_argument("to_ts", metavar="ISO_DATETIME", help="Convert ISO datetime string to timestamp")
+        group.add_argument("to_dt", metavar="TIMESTAMP", help="Convert timestamp to ISO datetime string")
 
-    def convert(self, args: Namespace):
-        if args.to_ts:
+    def convert(self, **kwargs: Any):
+        if kwargs.get('to_ts'):
             try:
-                # Assuming ISO format. Using datetime.fromisoformat which supports timezones in newer python versions.
-                # If the string doesn't have timezone, we assume local or UTC?
-                # "Timestamp <-> datetime (timezone aware)" requirement.
-                dt = datetime.datetime.fromisoformat(args.to_ts)
+                dt = datetime.datetime.fromisoformat(kwargs['to_ts'])
                 print(dt.timestamp())
             except ValueError as e:
                 raise ValidationError(f"Invalid ISO datetime format: {e}")
-        elif args.to_dt:
+        elif kwargs.get('to_dt'):
             try:
-                ts = float(args.to_dt)
-                # Using fromtimestamp with timezone info (UTC by default for clarity or local?)
-                # Requirement: "timezone aware".
-                # Let's output in UTC ISO format.
+                ts = float(kwargs['to_dt'])
                 dt = datetime.datetime.fromtimestamp(ts, tz=datetime.timezone.utc)
                 print(dt.isoformat())
             except ValueError as e:

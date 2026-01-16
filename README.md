@@ -1,27 +1,17 @@
 # Universal Converter Platform
 
-A modular, production-ready CLI tool for various conversions, built with Python.
+A modular, production-ready conversion tool featuring both a Command Line Interface (CLI) and a Graphical User Interface (GUI).
 
 ## Features
 
-**Phase 1 (Implemented):**
-- **Datetime**: Convert between Timestamp and ISO 8601 Datetime (Timezone aware).
-- **Number**: Convert between Hexadecimal and Decimal.
-- **Encoding**: Base64 Encode/Decode.
-
-**Phase 2 (Planned):**
-- DOCX to PDF
-- Image format conversions (JPG, PNG, WEBP)
-
-## Architecture
-
-The project follows a modular, plugin-based architecture.
-
-- **Core**: Contains the base converter interface (`BaseConverter`), the registry (`ConverterRegistry`), and custom exceptions.
-- **Converters**: Individual converter implementations that inherit from `BaseConverter`.
-- **CLI**: The main entry point that dynamically loads registered converters and exposes them as subcommands.
-
-This design allows for easy extension. To add a new converter, simply create a new class inheriting from `BaseConverter` and register it.
+- **Multi-Interface**:
+  - **CLI**: Standard UNIX-style command line tool.
+  - **GUI**: Modern, professional interface using `ttkbootstrap` (Dark/Light themes).
+- **Modular Architecture**: Easy to extend with new plugins.
+- **Phase 1 Converters**:
+  - **Datetime**: ISO 8601 <-> Timestamp (Timezone aware).
+  - **Number**: Hex <-> Decimal.
+  - **Encoding**: Base64 Encode/Decode.
 
 ## Installation
 
@@ -33,48 +23,45 @@ pip install -e .
 
 ## Usage
 
-### Datetime Conversion
+### Graphical User Interface (GUI)
 
-Convert ISO string to Timestamp:
+To launch the professional GUI:
+```bash
+universal-converter-gui
+```
+The interface is tab-based, allowing you to switch between converters easily. It supports dynamic form generation based on the converter's requirements.
+
+### Command Line Interface (CLI)
+
+**Datetime Conversion**
 ```bash
 universal-converter datetime --to-ts "2023-01-01T12:00:00+00:00"
-```
-
-Convert Timestamp to ISO string:
-```bash
 universal-converter datetime --to-dt 1672574400.0
 ```
 
-### Number Conversion
-
-Convert Hex to Decimal:
+**Number Conversion**
 ```bash
 universal-converter number --hex2dec 0xA
-```
-
-Convert Decimal to Hex:
-```bash
 universal-converter number --dec2hex 10
 ```
 
-### Encoding
-
-Base64 Encode:
+**Encoding**
 ```bash
 universal-converter encoding --b64enc "Hello World"
-```
-
-Base64 Decode:
-```bash
 universal-converter encoding --b64dec "SGVsbG8gV29ybGQ="
 ```
 
-## Running Tests
+## Architecture
+
+The project uses a **Builder Pattern** to abstract argument definitions.
+- `BaseConverter` defines arguments using `configure_args(builder)`.
+- `CLIBuilder` maps these to `argparse`.
+- `GUIBuilder` maps these to `ttkbootstrap` widgets.
+
+This ensures that adding a new converter requires writing the logic only once, and it automatically becomes available in both CLI and GUI.
+
+## Testing
 
 ```bash
 python -m unittest discover tests
 ```
-
-## DevOps
-
-- **CI/CD**: GitHub Actions workflow configured in `.github/workflows/ci.yml` runs tests on every Push and PR.
