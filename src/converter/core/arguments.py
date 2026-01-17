@@ -1,5 +1,12 @@
 from typing import List, Optional, Any, Dict
 from dataclasses import dataclass, field
+from enum import Enum, auto
+
+class ArgumentType(Enum):
+    STRING = auto()
+    TEXT = auto()      # Multiline text
+    FILE_SAVE = auto() # File path for saving
+    FLAG = auto()      # Boolean flag
 
 @dataclass
 class Argument:
@@ -7,8 +14,9 @@ class Argument:
     help: str
     metavar: Optional[str] = None
     required: bool = False
-    type: Any = str
-    action: Optional[str] = None # e.g., 'store_true'
+    type: ArgumentType = ArgumentType.STRING
+    default: Any = None
+    action: Optional[str] = None
 
 @dataclass
 class ArgumentGroup:
@@ -28,9 +36,12 @@ class InterfaceBuilder:
         self.groups: List[ArgumentGroup] = []
         self.arguments: List[Argument] = []
 
-    def add_argument(self, name: str, **kwargs):
+    def add_argument(self, name: str, arg_type: ArgumentType = ArgumentType.STRING, **kwargs):
         """Add a global argument for this converter."""
-        self.arguments.append(Argument(name=name, **kwargs))
+        # Infer FLAG type if action is store_true
+        if kwargs.get('action') == 'store_true':
+            arg_type = ArgumentType.FLAG
+        self.arguments.append(Argument(name=name, type=arg_type, **kwargs))
 
     def add_group(self, exclusive: bool = False, required: bool = False) -> ArgumentGroup:
         """Create and return a new argument group."""

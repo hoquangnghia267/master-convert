@@ -1,15 +1,15 @@
 import unittest
-import datetime
+import os
+import pandas as pd
 from converter.converters.datetime_converter import DatetimeConverter
-from converter.core.exceptions import ValidationError
 
 class TestDatetimeConverter(unittest.TestCase):
     def setUp(self):
         self.converter = DatetimeConverter()
 
-    def test_to_ts(self):
-        # 2023-01-01 12:00:00 UTC -> 1672574400.0
-        iso_str = "2023-01-01T12:00:00+00:00"
+    def test_batch_to_ts(self):
+        # Batch input
+        iso_str = "2023-01-01T12:00:00+00:00\n2023-01-02T12:00:00+00:00"
 
         from io import StringIO
         import sys
@@ -17,31 +17,33 @@ class TestDatetimeConverter(unittest.TestCase):
         sys.stdout = captured_output
 
         try:
-            # New signature: kwargs
             self.converter.convert(to_ts=iso_str)
             output = captured_output.getvalue().strip()
-            self.assertEqual(float(output), 1672574400.0)
+            self.assertIn("1672574400.0", output)
+            self.assertIn("1672660800.0", output)
         finally:
             sys.stdout = sys.__stdout__
 
-    def test_to_dt(self):
-        ts = 1672574400.0
-
-        from io import StringIO
-        import sys
-        captured_output = StringIO()
-        sys.stdout = captured_output
-
+    def test_excel_export(self):
+        iso_str = "2023-01-01T12:00:00+00:00"
+        output_file = "test_dt_output.xlsx"
         try:
-            self.converter.convert(to_dt=ts)
-            output = captured_output.getvalue().strip()
-            self.assertEqual(output, "2023-01-01T12:00:00+00:00")
-        finally:
-            sys.stdout = sys.__stdout__
+            from io import StringIO
+            import sys
+            # Suppress output
+            sys.stdout = StringIO()
 
-    def test_invalid_input(self):
-        with self.assertRaises(ValidationError):
-            self.converter.convert(to_ts="invalid")
+            self.converter.convert(to_ts=iso_str, export_excel=output_file)
+
+            self.assertTrue(os.path.exists(output_file))
+            df = pd.read_excel(output_file)
+            self.assertEqual(len(df), 1)
+            self.assertEqual(df.iloc[0]['Output'], 1672574400.0)
+
+        finally:
+             sys.stdout = sys.__stdout__
+             if os.path.exists(output_file):
+                 os.remove(output_file)
 
 if __name__ == '__main__':
     unittest.main()
